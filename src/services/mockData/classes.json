@@ -1,9 +1,10 @@
 [
-  {
+{
     "Id": 1,
     "name": "Introduction to Psychology",
     "code": "PSYC 101",
     "instructor": "Dr. Sarah Johnson",
+    "department": "Psychology",
     "location": "Smith Hall 204",
     "credits": 3,
     "color": "#4F46E5",
@@ -29,11 +30,12 @@
       }
     ]
   },
-  {
+{
     "Id": 2,
     "name": "Calculus I",
     "code": "MATH 151",
     "instructor": "Prof. Michael Chen",
+    "department": "Mathematics",
     "location": "Engineering Building 312",
     "credits": 4,
     "color": "#10B981",
@@ -53,11 +55,12 @@
       }
     ]
   },
-  {
+{
     "Id": 3,
     "name": "English Composition",
     "code": "ENGL 110",
     "instructor": "Dr. Amanda Rodriguez",
+    "department": "English",
     "location": "Liberal Arts 158",
     "credits": 3,
     "color": "#F59E0B",
@@ -77,11 +80,12 @@
       }
     ]
   },
-  {
+{
     "Id": 4,
     "name": "Introduction to Computer Science",
     "code": "COMP 110",
     "instructor": "Prof. David Kim",
+    "department": "Computer Science",
     "location": "Computer Science Building 101",
     "credits": 4,
     "color": "#3B82F6",
@@ -107,11 +111,12 @@
       }
     ]
   },
-  {
+{
     "Id": 5,
     "name": "World History",
     "code": "HIST 101",
     "instructor": "Dr. Robert Wilson",
+    "department": "History",
     "location": "Humanities 225",
     "credits": 3,
     "color": "#7C3AED",

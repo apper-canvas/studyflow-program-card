@@ -7,10 +7,11 @@ import FormField from "@/components/molecules/FormField"
 import { classService } from "@/services/api/classService"
 
 const ClassModal = ({ isOpen, onClose, classItem, onSave }) => {
-  const [formData, setFormData] = useState({
+const [formData, setFormData] = useState({
     name: "",
     code: "",
     instructor: "",
+    department: "",
     location: "",
     credits: 3,
     color: "#4F46E5",
@@ -31,11 +32,12 @@ const ClassModal = ({ isOpen, onClose, classItem, onSave }) => {
   ]
 
   useEffect(() => {
-    if (classItem) {
+if (classItem) {
       setFormData({
         name: classItem.name || "",
         code: classItem.code || "",
         instructor: classItem.instructor || "",
+        department: classItem.department || "",
         location: classItem.location || "",
         credits: classItem.credits || 3,
         color: classItem.color || "#4F46E5"
@@ -44,10 +46,11 @@ const ClassModal = ({ isOpen, onClose, classItem, onSave }) => {
         { dayOfWeek: "", startTime: "", endTime: "", location: "" }
       ])
     } else {
-      setFormData({
+setFormData({
         name: "",
         code: "",
         instructor: "",
+        department: "",
         location: "",
         credits: 3,
         color: "#4F46E5"
@@ -174,6 +177,13 @@ const ClassModal = ({ isOpen, onClose, classItem, onSave }) => {
                 />
               </div>
 
+<FormField
+                label="Department"
+                type="text"
+                placeholder="e.g., Computer Science, Mathematics"
+                value={formData.department}
+                onChange={(e) => setFormData({ ...formData, department: e.target.value })}
+              />
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <FormField
                   label="Credits"
