@@ -1,12 +1,16 @@
 import { useState } from "react"
-import { NavLink } from "react-router-dom"
+import { NavLink, useNavigate } from "react-router-dom"
 import { motion, AnimatePresence } from "framer-motion"
+import { toast } from "react-toastify"
 import ApperIcon from "@/components/ApperIcon"
 import Button from "@/components/atoms/Button"
 import { cn } from "@/utils/cn"
+import { useAuth } from "@/layouts/Root"
 
 const Header = () => {
   const [isMenuOpen, setIsMenuOpen] = useState(false)
+  const { logout } = useAuth()
+  const navigate = useNavigate()
 
   const navigationItems = [
     { name: "Dashboard", path: "/", icon: "LayoutDashboard" },
@@ -16,6 +20,15 @@ const Header = () => {
     { name: "Grades", path: "/grades", icon: "Trophy" }
   ]
 
+  const handleLogout = async () => {
+    try {
+      await logout()
+      toast.success("Logged out successfully")
+      navigate("/login")
+    } catch (error) {
+      toast.error("Failed to logout")
+    }
+  }
   return (
     <header className="bg-white shadow-soft border-b border-gray-200 fixed top-0 left-0 right-0 z-50">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -35,7 +48,7 @@ const Header = () => {
           </motion.div>
 
           {/* Desktop Navigation */}
-          <nav className="hidden md:flex items-center space-x-1">
+<nav className="hidden md:flex items-center space-x-1">
             {navigationItems.map((item) => (
               <NavLink
                 key={item.name}
@@ -55,11 +68,18 @@ const Header = () => {
             ))}
           </nav>
 
-          {/* Quick Add Button */}
-          <div className="hidden md:flex">
+          {/* Actions */}
+          <div className="hidden md:flex items-center space-x-2">
             <Button className="px-4 py-2">
               <ApperIcon name="Plus" className="w-4 h-4 mr-2" />
               Quick Add
+            </Button>
+            <Button 
+              onClick={handleLogout}
+              className="px-4 py-2 bg-red-600 hover:bg-red-700"
+            >
+              <ApperIcon name="LogOut" className="w-4 h-4 mr-2" />
+              Logout
             </Button>
           </div>
 
@@ -83,7 +103,7 @@ const Header = () => {
               exit={{ opacity: 0, height: 0 }}
               className="md:hidden border-t border-gray-200 bg-white"
             >
-              <nav className="py-4 space-y-1">
+<nav className="py-4 space-y-1">
                 {navigationItems.map((item, index) => (
                   <motion.div
                     key={item.name}
@@ -112,11 +132,18 @@ const Header = () => {
                   initial={{ opacity: 0, x: -20 }}
                   animate={{ opacity: 1, x: 0 }}
                   transition={{ delay: 0.5 }}
-                  className="pt-2"
+                  className="pt-2 space-y-2"
                 >
                   <Button className="w-full mx-4">
                     <ApperIcon name="Plus" className="w-4 h-4 mr-2" />
                     Quick Add
+                  </Button>
+                  <Button 
+                    onClick={handleLogout}
+                    className="w-full mx-4 bg-red-600 hover:bg-red-700"
+                  >
+                    <ApperIcon name="LogOut" className="w-4 h-4 mr-2" />
+                    Logout
                   </Button>
                 </motion.div>
               </nav>

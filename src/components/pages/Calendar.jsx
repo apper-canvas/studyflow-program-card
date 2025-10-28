@@ -1,26 +1,13 @@
-import { useState, useEffect } from "react"
-import { motion } from "framer-motion"
-import { 
-  format, 
-  startOfMonth, 
-  endOfMonth, 
-  startOfWeek, 
-  endOfWeek, 
-  eachDayOfInterval, 
-  isSameMonth, 
-  isToday,
-  addMonths,
-  subMonths,
-  parseISO,
-  isSameDay
-} from "date-fns"
-import ApperIcon from "@/components/ApperIcon"
-import Button from "@/components/atoms/Button"
-import Loading from "@/components/ui/Loading"
-import Error from "@/components/ui/Error"
-import { classService } from "@/services/api/classService"
-import { assignmentService } from "@/services/api/assignmentService"
-import { cn } from "@/utils/cn"
+import React, { useEffect, useState } from "react";
+import { motion } from "framer-motion";
+import { addMonths, eachDayOfInterval, endOfMonth, endOfWeek, format, isSameDay, isSameMonth, isToday, parseISO, startOfMonth, startOfWeek, subMonths } from "date-fns";
+import { classService } from "@/services/api/classService";
+import { assignmentService } from "@/services/api/assignmentService";
+import ApperIcon from "@/components/ApperIcon";
+import Button from "@/components/atoms/Button";
+import Loading from "@/components/ui/Loading";
+import Error from "@/components/ui/Error";
+import { cn } from "@/utils/cn";
 
 const Calendar = () => {
   const [currentDate, setCurrentDate] = useState(new Date())
@@ -39,13 +26,22 @@ const Calendar = () => {
       setLoading(true)
       setError("")
       
-      const [classesData, assignmentsData] = await Promise.all([
+const [classesData, assignmentsData] = await Promise.all([
         classService.getAll(),
         assignmentService.getAll()
       ])
       
-      setClasses(classesData)
-      setAssignments(assignmentsData)
+      const mappedAssignments = assignmentsData.map(a => ({
+        ...a,
+        classId: a.class_id_c?.Id || a.class_id_c,
+        title: a.title_c || a.title,
+        dueDate: a.due_date_c || a.dueDate,
+        completed: a.completed_c !== undefined ? a.completed_c : a.completed,
+        priority: a.priority_c !== undefined ? a.priority_c : a.priority
+      }))
+      
+setClasses(classesData)
+      setAssignments(mappedAssignments)
     } catch (err) {
       setError("Failed to load calendar data")
     } finally {
@@ -63,15 +59,15 @@ const Calendar = () => {
   }
 
   const getAssignmentsForDay = (date) => {
-    return assignments.filter(assignment => 
-      isSameDay(parseISO(assignment.dueDate), date)
+return assignments.filter(assignment => 
+      isSameDay(parseISO(assignment.due_date_c || assignment.dueDate), date)
     )
   }
 
-  const getClassesForDay = (date) => {
+const getClassesForDay = (date) => {
     const dayOfWeek = format(date, "EEEE")
     return classes.filter(classItem => 
-      classItem.schedule?.some(schedule => schedule.dayOfWeek === dayOfWeek)
+      (classItem.schedule_c || classItem.schedule)?.some(s => s.dayOfWeek === dayOfWeek)
     )
   }
 
@@ -181,43 +177,44 @@ const Calendar = () => {
 
                 <div className="space-y-1">
                   {/* Class Schedule */}
-                  {dayClasses.slice(0, 2).map(classItem => {
-                    const schedule = classItem.schedule.find(s => s.dayOfWeek === format(day, "EEEE"))
+{dayClasses.slice(0, 2).map(classItem => {
+                    const schedule = (classItem.schedule_c || classItem.schedule)?.find(s => s.dayOfWeek === format(day, "EEEE"))
                     return (
                       <div
                         key={classItem.Id}
                         className="text-xs p-1 rounded truncate"
                         style={{ 
-                          backgroundColor: classItem.color + "20",
-                          color: classItem.color,
-                          borderLeft: `3px solid ${classItem.color}`
+                          backgroundColor: (classItem.color_c || classItem.color) + "20",
+                          color: classItem.color_c || classItem.color,
+                          borderLeft: `3px solid ${classItem.color_c || classItem.color}`
                         }}
                       >
-                        {schedule?.startTime} {classItem.code}
+                        <div className="font-medium truncate">{classItem.code_c || classItem.code}</div>
+                        <div className="text-xs truncate opacity-75">{classItem.name_c || classItem.name}</div>
                       </div>
                     )
                   })}
 
                   {/* Assignments */}
                   {dayAssignments.slice(0, 2).map(assignment => {
-                    const assignmentClass = classes.find(c => c.Id === assignment.classId)
+const assignmentClass = classes.find(c => c.Id === (assignment.classId || (assignment.class_id_c?.Id || assignment.class_id_c)))
                     return (
                       <div
                         key={assignment.Id}
                         className={cn(
                           "text-xs p-1 rounded truncate border-l-3",
-                          assignment.completed 
+                          (assignment.completed_c || assignment.completed)
                             ? "bg-green-50 text-green-700 border-green-500" 
-                            : assignment.priority
+                            : (assignment.priority_c || assignment.priority)
                             ? "bg-amber-50 text-amber-700 border-amber-500"
                             : "bg-blue-50 text-blue-700 border-blue-500"
                         )}
                       >
-                        <ApperIcon 
-                          name={assignment.completed ? "CheckCircle" : "FileText"} 
+<ApperIcon 
+                          name={(assignment.completed_c || assignment.completed) ? "CheckCircle" : "FileText"}
                           className="w-3 h-3 inline mr-1" 
                         />
-                        {assignment.title}
+                        <span className="truncate">{assignment.title_c || assignment.title}</span>
                       </div>
                     )
                   })}

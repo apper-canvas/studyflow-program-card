@@ -34,15 +34,15 @@ const [formData, setFormData] = useState({
   useEffect(() => {
 if (classItem) {
       setFormData({
-        name: classItem.name || "",
-        code: classItem.code || "",
-        instructor: classItem.instructor || "",
-        department: classItem.department || "",
-        location: classItem.location || "",
-        credits: classItem.credits || 3,
-        color: classItem.color || "#4F46E5"
+        name: classItem.name_c || classItem.name || "",
+        code: classItem.code_c || classItem.code || "",
+        instructor: classItem.instructor_c || classItem.instructor || "",
+        department: classItem.department_c || classItem.department || "",
+        location: classItem.location_c || classItem.location || "",
+        credits: classItem.credits_c || classItem.credits || 3,
+        color: classItem.color_c || classItem.color || "#4F46E5"
       })
-      setSchedule(classItem.schedule?.length > 0 ? classItem.schedule : [
+setSchedule((classItem.schedule_c || classItem.schedule)?.length > 0 ? (classItem.schedule_c || classItem.schedule) : [
         { dayOfWeek: "", startTime: "", endTime: "", location: "" }
       ])
     } else {
@@ -74,9 +74,15 @@ setFormData({
     )
 
     try {
-      const classData = {
-        ...formData,
-        schedule: validSchedule
+const classData = {
+        name_c: formData.name,
+        code_c: formData.code,
+        instructor_c: formData.instructor,
+        department_c: formData.department,
+        location_c: formData.location,
+        credits_c: formData.credits,
+        color_c: formData.color,
+        schedule_c: validSchedule
       }
 
       if (classItem) {

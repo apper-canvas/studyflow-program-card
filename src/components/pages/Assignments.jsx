@@ -46,12 +46,17 @@ const Assignments = () => {
       setLoading(true)
       setError("")
       
-      const [assignmentsData, classesData] = await Promise.all([
+const [assignmentsData, classesData] = await Promise.all([
         assignmentService.getAll(),
         classService.getAll()
       ])
       
-      setAssignments(assignmentsData)
+      const mappedAssignments = assignmentsData.map(a => ({
+        ...a,
+        classId: a.class_id_c?.Id || a.class_id_c
+      }))
+      
+      setAssignments(mappedAssignments)
       setClasses(classesData)
     } catch (err) {
       setError("Failed to load assignments")
@@ -60,18 +65,23 @@ const Assignments = () => {
     }
   }
 
-  const handleToggleComplete = async (assignmentId, completed) => {
+const handleToggleComplete = async (assignmentId, completed) => {
     try {
       const assignment = assignments.find(a => a.Id === assignmentId)
       await assignmentService.update(assignmentId, {
-        ...assignment,
-        completed,
-        completedDate: completed ? new Date().toISOString() : null
+        completed_c: completed,
+        completed_date_c: completed ? new Date().toISOString() : null
       })
       
       setAssignments(assignments.map(a => 
         a.Id === assignmentId 
-          ? { ...a, completed, completedDate: completed ? new Date().toISOString() : null }
+          ? { 
+              ...a, 
+              completed_c: completed, 
+              completed: completed,
+              completed_date_c: completed ? new Date().toISOString() : null,
+              completedDate: completed ? new Date().toISOString() : null
+            }
           : a
       ))
       
@@ -114,22 +124,22 @@ const Assignments = () => {
 
     // Filter by class
     if (filters.classId) {
-      filtered = filtered.filter(a => a.classId === filters.classId)
+filtered = filtered.filter(a => (a.classId || (a.class_id_c?.Id || a.class_id_c)) === filters.classId)
     }
 
     // Filter by status
     switch (filters.status) {
       case "upcoming":
         filtered = filtered.filter(a => 
-          !a.completed && differenceInDays(parseISO(a.dueDate), new Date()) >= 0
+!(a.completed_c || a.completed) && differenceInDays(parseISO(a.due_date_c || a.dueDate), new Date()) >= 0
         )
         break
       case "completed":
-        filtered = filtered.filter(a => a.completed)
+filtered = filtered.filter(a => a.completed_c || a.completed)
         break
       case "overdue":
-        filtered = filtered.filter(a => 
-          !a.completed && isPast(parseISO(a.dueDate)) && !isToday(parseISO(a.dueDate))
+filtered = filtered.filter(a => 
+          !(a.completed_c || a.completed) && isPast(parseISO(a.due_date_c || a.dueDate)) && !isToday(parseISO(a.due_date_c || a.dueDate))
         )
         break
     }
@@ -137,15 +147,15 @@ const Assignments = () => {
     // Sort assignments
     switch (filters.sortBy) {
       case "dueDate":
-        filtered.sort((a, b) => new Date(a.dueDate) - new Date(b.dueDate))
+filtered.sort((a, b) => new Date(a.due_date_c || a.dueDate) - new Date(b.due_date_c || b.dueDate))
         break
       case "priority":
-        filtered.sort((a, b) => (b.priority ? 1 : 0) - (a.priority ? 1 : 0))
+filtered.sort((a, b) => ((b.priority_c || b.priority) ? 1 : 0) - ((a.priority_c || a.priority) ? 1 : 0))
         break
       case "class":
         filtered.sort((a, b) => {
-          const classA = classes.find(c => c.Id === a.classId)?.name || ""
-          const classB = classes.find(c => c.Id === b.classId)?.name || ""
+const classA = classes.find(c => c.Id === (a.classId || (a.class_id_c?.Id || a.class_id_c)))?.name_c || classes.find(c => c.Id === (a.classId || (a.class_id_c?.Id || a.class_id_c)))?.name || ""
+          const classB = classes.find(c => c.Id === (b.classId || (b.class_id_c?.Id || b.class_id_c)))?.name_c || classes.find(c => c.Id === (b.classId || (b.class_id_c?.Id || b.class_id_c)))?.name || ""
           return classA.localeCompare(classB)
         })
         break
@@ -154,7 +164,18 @@ const Assignments = () => {
     return filtered
   }
 
-  const getClassById = (id) => classes.find(c => c.Id === id)
+const getClassById = (id) => {
+    const classItem = classes.find(c => c.Id === id)
+    if (classItem) {
+      return {
+        ...classItem,
+        name: classItem.name_c || classItem.name,
+        code: classItem.code_c || classItem.code,
+        color: classItem.color_c || classItem.color
+      }
+    }
+    return null
+  }
 
   if (loading) return <Loading type="cards" />
   if (error) return <Error message={error} onRetry={loadData} />
@@ -198,8 +219,8 @@ const Assignments = () => {
             >
               <option value="">All Classes</option>
               {classes.map(classItem => (
-                <option key={classItem.Id} value={classItem.Id}>
-                  {classItem.code} - {classItem.name}
+<option key={classItem.Id} value={classItem.Id}>
+                  {classItem.code_c || classItem.code} - {classItem.name_c || classItem.name}
                 </option>
               ))}
             </Select>
@@ -247,14 +268,22 @@ const Assignments = () => {
         >
           {filteredAssignments.map((assignment, index) => (
             <motion.div
-              key={assignment.Id}
+key={assignment.Id}
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: index * 0.05 }}
             >
               <AssignmentCard
-                assignment={assignment}
-                classItem={getClassById(assignment.classId)}
+assignment={{
+                  ...assignment,
+                  title: assignment.title_c || assignment.title,
+                  description: assignment.description_c || assignment.description,
+                  dueDate: assignment.due_date_c || assignment.dueDate,
+                  priority: assignment.priority_c !== undefined ? assignment.priority_c : assignment.priority,
+                  completed: assignment.completed_c !== undefined ? assignment.completed_c : assignment.completed,
+                  grade: assignment.grade_c !== undefined ? assignment.grade_c : assignment.grade
+                }}
+                classItem={getClassById(assignment.classId || (assignment.class_id_c?.Id || assignment.class_id_c))}
                 onToggleComplete={handleToggleComplete}
                 onEdit={handleEdit}
                 onDelete={handleDelete}

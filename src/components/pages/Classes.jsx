@@ -27,7 +27,7 @@ const Classes = () => {
     try {
       setLoading(true)
       setError("")
-      const data = await classService.getAll()
+const data = await classService.getAll()
       setClasses(data)
     } catch (err) {
       setError("Failed to load classes")
@@ -112,7 +112,16 @@ const Classes = () => {
               transition={{ delay: index * 0.1 }}
             >
               <ClassCard
-                classItem={classItem}
+classItem={{
+                  ...classItem,
+                  name: classItem.name_c || classItem.name,
+                  code: classItem.code_c || classItem.code,
+                  instructor: classItem.instructor_c || classItem.instructor,
+                  location: classItem.location_c || classItem.location,
+                  color: classItem.color_c || classItem.color,
+                  currentGrade: classItem.current_grade_c !== undefined ? classItem.current_grade_c : classItem.currentGrade,
+                  schedule: classItem.schedule_c || classItem.schedule
+                }}
                 onEdit={handleEdit}
                 onDelete={handleDelete}
                 onViewAssignments={handleViewAssignments}

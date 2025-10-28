@@ -30,11 +30,11 @@ const AssignmentModal = ({ isOpen, onClose, assignment, onSave }) => {
   useEffect(() => {
     if (assignment) {
       setFormData({
-        title: assignment.title || "",
-        description: assignment.description || "",
-        classId: assignment.classId || "",
-        dueDate: assignment.dueDate ? format(new Date(assignment.dueDate), "yyyy-MM-dd'T'HH:mm") : "",
-        priority: assignment.priority || false
+title: assignment.title_c || assignment.title || "",
+        description: assignment.description_c || assignment.description || "",
+        classId: assignment.class_id_c?.Id || assignment.class_id_c || assignment.classId || "",
+        dueDate: assignment.due_date_c ? format(new Date(assignment.due_date_c), "yyyy-MM-dd'T'HH:mm") : (assignment.dueDate ? format(new Date(assignment.dueDate), "yyyy-MM-dd'T'HH:mm") : ""),
+        priority: assignment.priority_c !== undefined ? assignment.priority_c : (assignment.priority || false)
       })
     } else {
       setFormData({
@@ -69,11 +69,14 @@ const AssignmentModal = ({ isOpen, onClose, assignment, onSave }) => {
 
     try {
       const assignmentData = {
-        ...formData,
-        dueDate: new Date(formData.dueDate).toISOString(),
-        completed: assignment?.completed || false,
-        completedDate: assignment?.completedDate || null,
-        grade: assignment?.grade || null
+title_c: formData.title,
+        description_c: formData.description,
+        class_id_c: parseInt(formData.classId),
+        due_date_c: new Date(formData.dueDate).toISOString(),
+        priority_c: formData.priority,
+        completed_c: assignment?.completed_c || assignment?.completed || false,
+        completed_date_c: assignment?.completed_date_c || assignment?.completedDate || null,
+        grade_c: assignment?.grade_c || assignment?.grade || null
       }
 
       if (assignment) {
@@ -149,9 +152,9 @@ const AssignmentModal = ({ isOpen, onClose, assignment, onSave }) => {
                 disabled={loading}
               >
                 <option value="">Select a class</option>
-                {classes.map(classItem => (
+{classes.map(classItem => (
                   <option key={classItem.Id} value={classItem.Id}>
-                    {classItem.code} - {classItem.name}
+                    {classItem.code_c || classItem.code} - {classItem.name_c || classItem.name}
                   </option>
                 ))}
               </FormField>

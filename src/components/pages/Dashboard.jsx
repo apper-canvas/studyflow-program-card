@@ -1,16 +1,18 @@
-import { useState, useEffect } from "react"
-import { motion } from "framer-motion"
-import { format, isToday, parseISO, differenceInDays } from "date-fns"
-import ApperIcon from "@/components/ApperIcon"
-import Button from "@/components/atoms/Button"
-import Loading from "@/components/ui/Loading"
-import Error from "@/components/ui/Error"
-import Empty from "@/components/ui/Empty"
-import QuickStats from "@/components/molecules/QuickStats"
-import AssignmentCard from "@/components/molecules/AssignmentCard"
-import { classService } from "@/services/api/classService"
-import { assignmentService } from "@/services/api/assignmentService"
-import { toast } from "react-toastify"
+import React, { useEffect, useState } from "react";
+import { motion } from "framer-motion";
+import { differenceInDays, format, isToday, parseISO } from "date-fns";
+import { classService } from "@/services/api/classService";
+import { assignmentService } from "@/services/api/assignmentService";
+import { toast } from "react-toastify";
+import ApperIcon from "@/components/ApperIcon";
+import Button from "@/components/atoms/Button";
+import Assignments from "@/components/pages/Assignments";
+import Calendar from "@/components/pages/Calendar";
+import Loading from "@/components/ui/Loading";
+import Empty from "@/components/ui/Empty";
+import Error from "@/components/ui/Error";
+import QuickStats from "@/components/molecules/QuickStats";
+import AssignmentCard from "@/components/molecules/AssignmentCard";
 
 const Dashboard = () => {
   const [classes, setClasses] = useState([])
@@ -27,12 +29,22 @@ const Dashboard = () => {
       setLoading(true)
       setError("")
       
-      const [classesData, assignmentsData] = await Promise.all([
+const [classesData, assignmentsData] = await Promise.all([
         classService.getAll(),
         assignmentService.getAll()
       ])
       
+      const mappedAssignments = assignmentsData.map(a => ({
+        ...a,
+        classId: a.class_id_c?.Id || a.class_id_c,
+        title: a.title_c || a.title,
+        dueDate: a.due_date_c || a.dueDate,
+        completed: a.completed_c !== undefined ? a.completed_c : a.completed,
+        completedDate: a.completed_date_c || a.completedDate
+      }))
+      
       setClasses(classesData)
+      setAssignments(mappedAssignments)
       setAssignments(assignmentsData)
     } catch (err) {
       setError("Failed to load dashboard data")
@@ -43,11 +55,10 @@ const Dashboard = () => {
 
   const handleToggleComplete = async (assignmentId, completed) => {
     try {
-      const assignment = assignments.find(a => a.Id === assignmentId)
+const assignment = assignments.find(a => a.Id === assignmentId)
       await assignmentService.update(assignmentId, {
-        ...assignment,
-        completed,
-        completedDate: completed ? new Date().toISOString() : null
+        completed_c: completed,
+        completed_date_c: completed ? new Date().toISOString() : null
       })
       
       setAssignments(assignments.map(a => 
@@ -67,11 +78,11 @@ const Dashboard = () => {
 
   // Calculate stats
   const upcomingAssignments = assignments.filter(a => 
-    !a.completed && differenceInDays(parseISO(a.dueDate), new Date()) >= 0
+!(a.completed_c || a.completed) && differenceInDays(parseISO(a.due_date_c || a.dueDate), new Date()) >= 0
   ).length
 
   const completedToday = assignments.filter(a => 
-    a.completed && a.completedDate && isToday(parseISO(a.completedDate))
+(a.completed_c || a.completed) && (a.completed_date_c || a.completedDate) && isToday(parseISO(a.completed_date_c || a.completedDate))
   ).length
 
   const averageGrade = classes.length > 0 
@@ -89,16 +100,31 @@ const Dashboard = () => {
   const today = new Date()
   const dayOfWeek = today.toLocaleDateString("en-US", { weekday: "long" })
   const todaysClasses = classes.filter(c => 
-    c.schedule?.some(s => s.dayOfWeek === dayOfWeek)
+(c.schedule_c || c.schedule)?.some(s => s.dayOfWeek === dayOfWeek)
   )
 
   // Get upcoming assignments (next 7 days)
-  const upcomingAssignmentsList = assignments
-    .filter(a => !a.completed && differenceInDays(parseISO(a.dueDate), new Date()) <= 7 && differenceInDays(parseISO(a.dueDate), new Date()) >= 0)
-    .sort((a, b) => new Date(a.dueDate) - new Date(b.dueDate))
+const upcomingAssignmentsList = assignments
+    .filter(a => 
+      !(a.completed_c || a.completed) && 
+      differenceInDays(parseISO(a.due_date_c || a.dueDate), new Date()) <= 7 && 
+      differenceInDays(parseISO(a.due_date_c || a.dueDate), new Date()) >= 0
+    )
+    .sort((a, b) => new Date(a.due_date_c || a.dueDate) - new Date(b.due_date_c || b.dueDate))
     .slice(0, 5)
 
-  const getClassById = (id) => classes.find(c => c.Id === id)
+const getClassById = (id) => {
+    const classItem = classes.find(c => c.Id === id)
+    if (classItem) {
+      return {
+        ...classItem,
+        name: classItem.name_c || classItem.name,
+        code: classItem.code_c || classItem.code,
+        color: classItem.color_c || classItem.color
+      }
+    }
+    return null
+  }
 
   if (classes.length === 0) {
     return (
@@ -171,15 +197,13 @@ const Dashboard = () => {
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: index * 0.1 }}
                     className="flex items-center space-x-4 p-4 bg-gray-50 rounded-lg"
-                  >
+>
                     <div 
-                      className="w-4 h-4 rounded-full"
-                      style={{ backgroundColor: classItem.color }}
+                      className="w-3 h-3 rounded-full"
+                      style={{ backgroundColor: classItem.color_c || classItem.color }}
                     />
                     <div className="flex-1">
-                      <h3 className="font-semibold text-gray-900">{classItem.name}</h3>
-                      <p className="text-sm text-gray-600">{classItem.code}</p>
-                    </div>
+                      <h3 className="font-semibold text-gray-900">{classItem.name_c || classItem.name}</h3>
                     <div className="text-right">
                       <p className="text-sm font-medium text-gray-900">
                         {todaySchedule?.startTime} - {todaySchedule?.endTime}

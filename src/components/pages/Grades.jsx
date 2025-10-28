@@ -1,15 +1,15 @@
-import { useState, useEffect } from "react"
-import { motion } from "framer-motion"
-import { toast } from "react-toastify"
-import ApperIcon from "@/components/ApperIcon"
-import Button from "@/components/atoms/Button"
-import Loading from "@/components/ui/Loading"
-import Error from "@/components/ui/Error"
-import Empty from "@/components/ui/Empty"
-import StatCard from "@/components/molecules/StatCard"
-import { classService } from "@/services/api/classService"
-import { assignmentService } from "@/services/api/assignmentService"
-import { cn } from "@/utils/cn"
+import React, { useEffect, useState } from "react";
+import { motion } from "framer-motion";
+import { toast } from "react-toastify";
+import { classService } from "@/services/api/classService";
+import { assignmentService } from "@/services/api/assignmentService";
+import ApperIcon from "@/components/ApperIcon";
+import Button from "@/components/atoms/Button";
+import Loading from "@/components/ui/Loading";
+import Empty from "@/components/ui/Empty";
+import Error from "@/components/ui/Error";
+import StatCard from "@/components/molecules/StatCard";
+import { cn } from "@/utils/cn";
 
 const Grades = () => {
   const [classes, setClasses] = useState([])
@@ -26,12 +26,20 @@ const Grades = () => {
       setLoading(true)
       setError("")
       
-      const [classesData, assignmentsData] = await Promise.all([
+const [classesData, assignmentsData] = await Promise.all([
         classService.getAll(),
         assignmentService.getAll()
       ])
       
+      const mappedAssignments = assignmentsData.map(a => ({
+        ...a,
+        classId: a.class_id_c?.Id || a.class_id_c,
+        completed: a.completed_c !== undefined ? a.completed_c : a.completed,
+        grade: a.grade_c !== undefined ? a.grade_c : a.grade
+      }))
+      
       setClasses(classesData)
+      setAssignments(mappedAssignments)
       setAssignments(assignmentsData)
     } catch (err) {
       setError("Failed to load grades data")
@@ -41,22 +49,30 @@ const Grades = () => {
   }
 
   const calculateClassGrade = (classId) => {
-    const classAssignments = assignments.filter(a => a.classId === classId && a.completed && a.grade !== null && a.grade !== undefined)
+const classAssignments = assignments.filter(a => 
+      (a.classId || (a.class_id_c?.Id || a.class_id_c)) === classId && 
+      (a.completed_c || a.completed) && 
+      (a.grade_c !== null && a.grade_c !== undefined) || (a.grade !== null && a.grade !== undefined)
+    )
     
     if (classAssignments.length === 0) return null
     
-    const totalGrades = classAssignments.reduce((sum, a) => sum + a.grade, 0)
+const totalGrades = classAssignments.reduce((sum, a) => sum + (a.grade_c || a.grade), 0)
     return Math.round(totalGrades / classAssignments.length)
   }
 
   const calculateOverallGPA = () => {
-    const classesWithGrades = classes.filter(c => c.currentGrade !== null && c.currentGrade !== undefined)
+const classesWithGrades = classes.filter(c => 
+      (c.current_grade_c !== null && c.current_grade_c !== undefined) || 
+      (c.currentGrade !== null && c.currentGrade !== undefined)
+    )
     
     if (classesWithGrades.length === 0) return 0
     
-    const totalGradePoints = classesWithGrades.reduce((sum, c) => {
-      const gpa = gradeToGPA(c.currentGrade)
-      return sum + (gpa * (c.credits || 3))
+const totalGradePoints = classesWithGrades.reduce((sum, c) => {
+      const grade = (c.current_grade_c !== undefined ? c.current_grade_c : c.currentGrade) || calculateClassGrade(c.Id)
+      const credits = c.credits_c || c.credits || 3
+      return sum + (grade * credits)
     }, 0)
     
     const totalCredits = classesWithGrades.reduce((sum, c) => sum + (c.credits || 3), 0)
@@ -97,9 +113,12 @@ const Grades = () => {
   if (error) return <Error message={error} onRetry={loadData} />
 
   const overallGPA = calculateOverallGPA()
-  const completedAssignments = assignments.filter(a => a.completed && a.grade !== null && a.grade !== undefined)
+const completedAssignments = assignments.filter(a => 
+    (a.completed_c || a.completed) && 
+    ((a.grade_c !== null && a.grade_c !== undefined) || (a.grade !== null && a.grade !== undefined))
+  )
   const averageGrade = completedAssignments.length > 0 
-    ? Math.round(completedAssignments.reduce((sum, a) => sum + a.grade, 0) / completedAssignments.length)
+    ? Math.round(completedAssignments.reduce((sum, a) => sum + (a.grade_c || a.grade), 0) / completedAssignments.length)
     : 0
 
   const stats = {
@@ -184,10 +203,13 @@ const Grades = () => {
             
             <div className="space-y-4">
               {classes.map((classItem, index) => {
-                const calculatedGrade = calculateClassGrade(classItem.Id)
-                const displayGrade = classItem.currentGrade || calculatedGrade
-                const classAssignments = assignments.filter(a => a.classId === classItem.Id)
-                const gradedAssignments = classAssignments.filter(a => a.completed && a.grade !== null && a.grade !== undefined)
+const calculatedGrade = calculateClassGrade(classItem.Id)
+                const displayGrade = (classItem.current_grade_c !== undefined ? classItem.current_grade_c : classItem.currentGrade) || calculatedGrade
+                const classAssignments = assignments.filter(a => (a.classId || (a.class_id_c?.Id || a.class_id_c)) === classItem.Id)
+                const gradedAssignments = classAssignments.filter(a => 
+                  (a.completed_c || a.completed) && 
+                  ((a.grade_c !== null && a.grade_c !== undefined) || (a.grade !== null && a.grade !== undefined))
+                )
                 
                 return (
                   <motion.div
@@ -204,14 +226,13 @@ const Grades = () => {
                       <div className="flex items-center space-x-3">
                         <div 
                           className="w-4 h-4 rounded-full"
-                          style={{ backgroundColor: classItem.color }}
+className="w-4 h-4 rounded-full"
+                          style={{ backgroundColor: classItem.color_c || classItem.color }}
                         />
                         <div>
-                          <h3 className="font-semibold text-gray-900">{classItem.name}</h3>
-                          <p className="text-sm text-gray-600">{classItem.code}</p>
+                          <h3 className="font-semibold text-gray-900">{classItem.name_c || classItem.name}</h3>
+                          <p className="text-sm text-gray-600">{classItem.code_c || classItem.code}</p>
                         </div>
-                      </div>
-                      
                       <div className="text-right">
                         {displayGrade ? (
                           <div className={cn("text-2xl font-bold", getGradeColor(displayGrade))}>
@@ -254,13 +275,13 @@ const Grades = () => {
                       <div className="mt-4 pt-4 border-t border-gray-200">
                         <p className="text-sm font-medium text-gray-700 mb-2">Recent Grades:</p>
                         <div className="flex flex-wrap gap-2">
-                          {gradedAssignments.slice(-5).map(assignment => (
-                            <div
+{gradedAssignments.slice(-5).map(assignment => (
+                            <div 
                               key={assignment.Id}
-                              className="px-2 py-1 bg-white rounded text-xs font-medium"
-                              style={{ color: classItem.color }}
+                              className="px-2 py-1 bg-white rounded text-xs font-medium flex items-center justify-between"
                             >
-                              {assignment.grade}%
+                              <span className="text-sm text-gray-900">{assignment.title_c || assignment.title}</span>
+                              <span className="text-sm font-semibold text-indigo-600">{assignment.grade_c || assignment.grade}%</span>
                             </div>
                           ))}
                         </div>
@@ -278,10 +299,10 @@ const Grades = () => {
             
             <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
               {[
-                { label: "A (90-100%)", color: "green", count: completedAssignments.filter(a => a.grade >= 90).length },
-                { label: "B (80-89%)", color: "blue", count: completedAssignments.filter(a => a.grade >= 80 && a.grade < 90).length },
-                { label: "C (70-79%)", color: "amber", count: completedAssignments.filter(a => a.grade >= 70 && a.grade < 80).length },
-                { label: "D/F (<70%)", color: "red", count: completedAssignments.filter(a => a.grade < 70).length }
+{ label: "A (90-100%)", color: "green", count: completedAssignments.filter(a => (a.grade_c || a.grade) >= 90).length },
+                { label: "B (80-89%)", color: "blue", count: completedAssignments.filter(a => (a.grade_c || a.grade) >= 80 && (a.grade_c || a.grade) < 90).length },
+                { label: "C (70-79%)", color: "amber", count: completedAssignments.filter(a => (a.grade_c || a.grade) >= 70 && (a.grade_c || a.grade) < 80).length },
+                { label: "D/F (<70%)", color: "red", count: completedAssignments.filter(a => (a.grade_c || a.grade) < 70).length }
               ].map((grade, index) => (
                 <motion.div
                   key={grade.label}
