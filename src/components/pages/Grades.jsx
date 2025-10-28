@@ -225,7 +225,6 @@ const calculatedGrade = calculateClassGrade(classItem.Id)
                     <div className="flex items-center justify-between mb-3">
                       <div className="flex items-center space-x-3">
                         <div 
-                          className="w-4 h-4 rounded-full"
 className="w-4 h-4 rounded-full"
                           style={{ backgroundColor: classItem.color_c || classItem.color }}
                         />
@@ -233,6 +232,7 @@ className="w-4 h-4 rounded-full"
                           <h3 className="font-semibold text-gray-900">{classItem.name_c || classItem.name}</h3>
                           <p className="text-sm text-gray-600">{classItem.code_c || classItem.code}</p>
                         </div>
+                      </div>
                       <div className="text-right">
                         {displayGrade ? (
                           <div className={cn("text-2xl font-bold", getGradeColor(displayGrade))}>

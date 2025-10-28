@@ -38,15 +38,13 @@ className={cn(
         completed_c && "opacity-75"
       )}
     >
-      <div className="flex items-start space-x-4">
+<div className="flex items-start space-x-4">
         <div className="mt-1">
           <Checkbox
             checked={completed_c}
             onChange={(checked) => onToggleComplete(assignment.Id, checked)}
           />
         </div>
-</div>
-        
         <div className="flex-1">
           <div className="flex items-center justify-between mb-2">
             <h3 className={cn(
@@ -111,7 +109,7 @@ className={cn(
                 <ApperIcon name="Trash2" className="w-4 h-4" />
               </Button>
             </div>
-          </div>
+</div>
         </div>
       </div>
     </motion.div>

@@ -204,6 +204,7 @@ const getClassById = (id) => {
                     />
                     <div className="flex-1">
                       <h3 className="font-semibold text-gray-900">{classItem.name_c || classItem.name}</h3>
+                    </div>
                     <div className="text-right">
                       <p className="text-sm font-medium text-gray-900">
                         {todaySchedule?.startTime} - {todaySchedule?.endTime}
