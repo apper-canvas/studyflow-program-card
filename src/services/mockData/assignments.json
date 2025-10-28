@@ -1,0 +1,112 @@
+[
+  {
+    "Id": 1,
+    "title": "Chapter 3 Reflection Essay",
+    "description": "Write a 500-word reflection on the concepts covered in Chapter 3: Learning and Memory",
+    "classId": "1",
+    "dueDate": "2024-02-15T23:59:00.000Z",
+    "priority": false,
+    "completed": true,
+    "completedDate": "2024-02-14T18:30:00.000Z",
+    "grade": 88
+  },
+  {
+    "Id": 2,
+    "title": "Problem Set 4",
+    "description": "Complete all problems from Section 4.1 through 4.3 in the textbook",
+    "classId": "2",
+    "dueDate": "2024-02-18T23:59:00.000Z",
+    "priority": true,
+    "completed": false,
+    "completedDate": null,
+    "grade": null
+  },
+  {
+    "Id": 3,
+    "title": "Research Paper Draft",
+    "description": "Submit first draft of research paper on chosen topic (minimum 1000 words)",
+    "classId": "3",
+    "dueDate": "2024-02-20T23:59:00.000Z",
+    "priority": true,
+    "completed": false,
+    "completedDate": null,
+    "grade": null
+  },
+  {
+    "Id": 4,
+    "title": "Programming Assignment 2",
+    "description": "Implement a basic sorting algorithm in Python with documentation",
+    "classId": "4",
+    "dueDate": "2024-02-16T23:59:00.000Z",
+    "priority": false,
+    "completed": true,
+    "completedDate": "2024-02-15T20:15:00.000Z",
+    "grade": 95
+  },
+  {
+    "Id": 5,
+    "title": "Midterm Exam",
+    "description": "Comprehensive exam covering chapters 1-6",
+    "classId": "5",
+    "dueDate": "2024-02-22T10:00:00.000Z",
+    "priority": true,
+    "completed": false,
+    "completedDate": null,
+    "grade": null
+  },
+  {
+    "Id": 6,
+    "title": "Lab Report 3",
+    "description": "Complete analysis of experimental results from Lab 3",
+    "classId": "1",
+    "dueDate": "2024-02-25T23:59:00.000Z",
+    "priority": false,
+    "completed": false,
+    "completedDate": null,
+    "grade": null
+  },
+  {
+    "Id": 7,
+    "title": "Derivative Practice Problems",
+    "description": "Complete problems 1-20 from Chapter 5 worksheet",
+    "classId": "2",
+    "dueDate": "2024-02-19T08:00:00.000Z",
+    "priority": false,
+    "completed": true,
+    "completedDate": "2024-02-18T19:45:00.000Z",
+    "grade": 92
+  },
+  {
+    "Id": 8,
+    "title": "Grammar Quiz",
+    "description": "Online quiz covering sentence structure and punctuation rules",
+    "classId": "3",
+    "dueDate": "2024-02-17T23:59:00.000Z",
+    "priority": false,
+    "completed": true,
+    "completedDate": "2024-02-17T16:30:00.000Z",
+    "grade": 85
+  },
+  {
+    "Id": 9,
+    "title": "Algorithm Analysis Project",
+    "description": "Compare time complexity of different sorting algorithms",
+    "classId": "4",
+    "dueDate": "2024-02-28T23:59:00.000Z",
+    "priority": true,
+    "completed": false,
+    "completedDate": null,
+    "grade": null
+  },
+  {
+    "Id": 10,
+    "title": "Timeline Assignment",
+    "description": "Create detailed timeline of major events in Medieval Europe",
+    "classId": "5",
+    "dueDate": "2024-02-21T23:59:00.000Z",
+    "priority": false,
+    "completed": false,
+    "completedDate": null,
+    "grade": null
+  }
+]
